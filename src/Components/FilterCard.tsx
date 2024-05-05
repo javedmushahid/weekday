@@ -32,13 +32,14 @@ const FilterCard: React.FC<{
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedCompanySearch(companySearch);
-    }, 500);
+    }, 500); // Adjust debounce delay as needed
     return () => {
       clearTimeout(timeoutId);
     };
   }, [companySearch]);
 
   useEffect(() => {
+    // Filter the jobs based on company name search and selected filters
     const filteredJobs = filterJobs(selectedFilter, debouncedCompanySearch);
     setFilteredJobs(filteredJobs);
   }, [selectedFilter, debouncedCompanySearch, setFilteredJobs]);
@@ -56,6 +57,7 @@ const FilterCard: React.FC<{
   ) => {
     const selectedValue = event.target.value as string;
 
+    // Update the selected filters based on the filter type
     const updatedSelectedFilters = [...selectedFilter];
     const existingFilterIndex = updatedSelectedFilters.findIndex(
       (filter) => filter.type === filterType
@@ -68,19 +70,10 @@ const FilterCard: React.FC<{
 
     setSelectedFilter(updatedSelectedFilters);
 
+    // Filter the jobs based on all selected filters and company name search
     const filteredJobs = filterJobs(updatedSelectedFilters, companySearch);
     setFilteredJobs(filteredJobs);
   };
-
-  // const handleCompanySearchChange = (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   const searchQuery = event.target.value;
-  //   setCompanySearch(searchQuery);
-
-  //   const filteredJobs = filterJobs(selectedFilter, searchQuery);
-  //   setFilteredJobs(filteredJobs);
-  // };
 
   const filterJobs = (
     filters: { type: string; value: string }[],
@@ -98,18 +91,17 @@ const FilterCard: React.FC<{
           case "minJdSalary":
             return job.minJdSalary === Number(filter.value);
           default:
-            return true;
+            return true; // For other filter types, include the job in the result
         }
       });
 
-      const matchesCompanySearch =
-        companyName.trim() === "" ||
-        job.companyName.toLowerCase().includes(companyName.toLowerCase());
+      const matchesCompanySearch = job.companyName
+        .toLowerCase()
+        .includes(companyName.toLowerCase());
 
       return matchesFilters && matchesCompanySearch;
     });
   };
-
   return (
     <Card sx={{ p: 1 }}>
       <CardContent>
@@ -147,7 +139,7 @@ const FilterCard: React.FC<{
               variant="outlined"
               defaultValue={companySearch}
               onChange={handleCompanySearchChange}
-            />
+            ></TextField>
           </Grid>
           <Grid item xs={12} md={6} lg={isLargeScreen ? 2 : 12}>
             <TextField

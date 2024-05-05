@@ -85,25 +85,30 @@ const Index = () => {
       setJobs((prevJobs) => [...prevJobs, ...newJobs]);
       setHasMore(newJobs.length > 0);
       page.current += 1;
-      const uniqueRoles = Array.from(
-        new Set(newJobs.map((job) => job.jobRole))
-      ) as string[];
-      const uniqueLocations = Array.from(
-        new Set(newJobs.map((job) => job.location))
-      ) as string[];
-      const uniqueExperience = Array.from(
-        new Set(newJobs.map((job) => job.minExp))
-      ) as number[];
-      const uniqueminPay = Array.from(
-        new Set(newJobs.map((job) => job.minJdSalary))
-      ) as number[];
-      setFilterOptions({
-        roles: uniqueRoles,
-        locations: uniqueLocations,
-        experience: uniqueExperience,
-        minPay: uniqueminPay,
-      });
-      applySelectedFilters(newJobs);
+
+      if (newJobs.length > 0) {
+        const uniqueRoles = Array.from(
+          new Set(newJobs.map((job) => job.jobRole))
+        ) as string[];
+        const uniqueLocations = Array.from(
+          new Set(newJobs.map((job) => job.location))
+        ) as string[];
+        const uniqueExperience = Array.from(
+          new Set(newJobs.map((job) => job.minExp))
+        ) as number[];
+        const uniqueminPay = Array.from(
+          new Set(newJobs.map((job) => job.minJdSalary))
+        ) as number[];
+        setFilterOptions({
+          roles: uniqueRoles,
+          locations: uniqueLocations,
+          experience: uniqueExperience,
+          minPay: uniqueminPay,
+        });
+        applySelectedFilters(newJobs);
+      } else {
+        setNoResults(true);
+      }
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
@@ -111,13 +116,45 @@ const Index = () => {
     }
   };
 
+  // const applySelectedFilters = (newJobs: Job[]) => {
+  //   // If there are no selected filters, set filteredJobs to all jobs
+  //   if (filteredJobs.length === 0) {
+  //     setFilteredJobs(newJobs);
+  //     setNoResults(newJobs.length === 0);
+  //     return;
+  //   }
+
+  //   // Filter the new jobs based on the selected filters
+  //   const filteredNewJobs = newJobs.filter((job) => {
+  //     return filteredJobs.some((filteredJob) => {
+  //       return Object.keys(filteredJob).every((key) => {
+  //         return filteredJob[key as keyof Job] === job[key as keyof Job];
+  //       });
+  //     });
+  //   });
+  //   console.log("filteredNewJobs", filteredNewJobs);
+
+  //   // If there are no search results, set the noResults state and return without updating filteredJobs or incrementing page.current
+  //   if (filteredNewJobs.length === 0) {
+  //     setFilteredJobs([]);
+  //     setNoResults(true);
+  //     return;
+  //   }
+
+  //   // Update the filtered jobs, reset the noResults state, and increment page.current
+  //   setFilteredJobs(filteredNewJobs);
+  //   setNoResults(false);
+  // };
+
   const applySelectedFilters = (newJobs: Job[]) => {
+    // If there are no selected filters, set filteredJobs to all jobs
     if (filteredJobs.length === 0) {
       setFilteredJobs(newJobs);
       setNoResults(newJobs.length === 0);
       return;
     }
 
+    // Filter the new jobs based on the selected filters
     const filteredNewJobs = newJobs.filter((job) => {
       return filteredJobs.some((filteredJob) => {
         return Object.keys(filteredJob).every((key) => {
@@ -125,15 +162,21 @@ const Index = () => {
         });
       });
     });
+    console.log("filteredNewJobs", filteredNewJobs);
 
-    // If there are no search results, do not update the filtered jobs and set the noResults state
+    // If there are no search results, set the noResults state and return without updating filteredJobs or incrementing page.current
     if (filteredNewJobs.length === 0) {
       setNoResults(true);
       return;
     }
 
-    setFilteredJobs(filteredNewJobs);
+    // Update the filtered jobs, reset the noResults state, and increment page.current
+    setFilteredJobs((prevFilteredJobs) => [
+      ...prevFilteredJobs,
+      ...filteredNewJobs,
+    ]);
     setNoResults(false);
+    page.current += 1;
   };
 
   return (
@@ -143,20 +186,6 @@ const Index = () => {
         setFilteredJobs={setFilteredJobs}
         jobs={jobs}
       />
-      {noResults && (
-        <Typography
-          variant="body1"
-          color="error"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
-          No results found.
-        </Typography>
-      )}
       <Box mt={2}>
         <Grid container spacing={4}>
           {filteredJobs.map((job: Job, index: number) => (
